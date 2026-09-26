@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+qa-screenshots
+*.local
+.DS_Store
+# Never commit personal history files
+Indras-Poop-History-*
+*.poophistory.json
