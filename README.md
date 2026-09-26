@@ -60,6 +60,8 @@ npm run qa        # writes qa-screenshots/
 4. `npm run build` with `BASE_PATH=/<repo-name>/`
 5. publishes `dist/` to the `gh-pages` branch, which GitHub Pages serves
 
+After a deploy, `npm run verify:production` opens the live site in an iPhone-sized Chromium and checks loading, assets, manifest, service worker, recording, deleting, all screens, the history download, reload persistence, deep links and offline mode.
+
 Pages settings: **Settings → Pages → Deploy from a branch → `gh-pages` / root.** Vite’s `base` comes from `BASE_PATH` (see `vite.config.ts`); routing is hash-based (`#/calendar`), so reloads and deep links always work on Pages.
 
 ## Storage architecture

@@ -13,7 +13,8 @@
     "validate:insights": "vitest run src/insights/__tests__/validation.test.ts",
     "typecheck": "tsc --noEmit -p .",
     "icons": "node scripts/generate-icons.mjs",
-    "qa": "node scripts/mobile-qa.mjs"
+    "qa": "node scripts/mobile-qa.mjs",
+    "verify:production": "node scripts/verify-production.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
