@@ -6,8 +6,9 @@ const URL = process.env.PROD_URL || 'https://teleryan25.github.io/Indra-s-Bowel-
 const results = [];
 const ok = (name, pass, extra = '') => { results.push({ name, pass }); console.log(`${pass ? '✓' : '✗'} ${name}${extra ? ` — ${extra}` : ''}`); };
 
-const browser = await chromium.launch();
-const context = await browser.newContext({ ...devices['iPhone 15'], acceptDownloads: true });
+// QA_IGNORE_TLS=1 only for sandboxes whose egress proxy re-signs HTTPS
+const browser = await chromium.launch(process.env.QA_IGNORE_TLS ? { args: ['--ignore-certificate-errors'] } : {});
+const context = await browser.newContext({ ...devices['iPhone 15'], acceptDownloads: true, ignoreHTTPSErrors: !!process.env.QA_IGNORE_TLS });
 const page = await context.newPage();
 const errors = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
@@ -20,14 +21,14 @@ ok('initial load', res?.status() === 200, `HTTP ${res?.status()}`);
 await page.waitForSelector('.hero');
 ok('assets load without errors', failed.length === 0, failed.join(', '));
 
-const manifest = await page.evaluate(async () => {
-  const href = document.querySelector('link[rel=manifest]').href;
-  const r = await fetch(href);
-  return { ok: r.ok, json: r.ok ? await r.json() : null };
-});
-ok('PWA manifest served', manifest.ok && manifest.json.display === 'standalone');
-const iconOk = await page.evaluate(async () => (await fetch(document.querySelector('link[rel=apple-touch-icon]').href)).ok);
-ok('apple touch icon served', iconOk);
+const hrefs = await page.evaluate(() => ({
+  manifest: document.querySelector('link[rel=manifest]').href,
+  icon: document.querySelector('link[rel=apple-touch-icon]').href,
+}));
+const mRes = await context.request.get(hrefs.manifest);
+const mJson = mRes.ok() ? await mRes.json() : null;
+ok('PWA manifest served', !!mJson && mJson.display === 'standalone');
+ok('apple touch icon served', (await context.request.get(hrefs.icon)).ok());
 
 const swReady = await page.evaluate(async () => {
   const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((r) => setTimeout(() => r(null), 15000))]);
